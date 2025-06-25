@@ -1,30 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const fondModale = document.getElementById("maModale");
-    const modal1 = document.querySelector(".modalinter");
-    const modal2 = document.querySelector(".addPhoto");
-    const btnAjout = document.querySelector(".btnajt");
-    const flecheRetour = document.querySelector(".fleche");
-    const openButton = document.querySelector(".modifier");
-    const worksDom = document.querySelector(".section-image");
-    
+  const fondModale = document.getElementById("maModale");
+  const modal1 = document.querySelector(".modalinter");
+  const modal2 = document.querySelector(".addPhoto");
+  const btnAjout = document.querySelector(".btnajt");
+  const flecheRetour = document.querySelector(".fleche");
+  const openButton = document.querySelector(".modifier");
+  const worksDom = document.querySelector(".section-image");
 
-  
-    // Masquer tout au démarrage
-    if (fondModale) fondModale.style.display = "none";
-    if (modal1) modal1.style.display = "none";
-    if (modal2) modal2.style.display = "none";
-    const getWorks = async () => {
+  // Masquer toutes les modales au démarrage
+  if (fondModale) fondModale.style.display = "none";
+  if (modal1) modal1.style.display = "none";
+  if (modal2) modal2.style.display = "none";
+
+  // Fonction de récupération des travaux
+  const getWorks = async () => {
     try {
       const response = await fetch("http://localhost:5678/api/works");
+      if (!response.ok) throw new Error("Réponse invalide de l’API");
       return await response.json();
-    } catch (error) {
+    } 
+    
+    catch (error) {
       console.error("Erreur lors de la récupération des travaux :", error);
+      return [];
     }
+    
   };
 
+  // Fonction d’affichage des travaux dans la modale
   async function displayTravauxModal() {
     worksDom.innerHTML = "";
     const works = await getWorks();
+    console.table(works);
+
     works.forEach((work) => {
       const workWrapper = document.createElement("div");
       workWrapper.classList.add("work-item");
@@ -40,21 +48,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const token = localStorage.getItem("token");
         const idToDelete = work.id;
 
-        const reponse = await fetch(`http://localhost:5678/api/works/`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        try {
+          const reponse = await fetch(`http://localhost:5678/api/works/${idToDelete}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-        if (reponse.status === 204) {
-          alert("Élément supprimé");
-          workWrapper.remove();
-        } else if (reponse.status === 401) {
-          alert("Non autorisé");
-        } else {
-          alert("Erreur lors de la suppression");
+          if (reponse.status === 204 || reponse.status === 200) {
+            alert("Élément supprimé avec succès");
+            workWrapper.remove();
+          } else if (reponse.status === 401) {
+            alert("Non autorisé : tu n’as pas les droits pour supprimer cet élément.");
+          } else {
+            alert("Erreur lors de la suppression : l’élément n’a pas pu être supprimé.");
+          }
+        } catch (err) {
+          console.error("Erreur réseau lors de la suppression :", err);
+          alert("Une erreur réseau s’est produite.");
         }
       });
 
@@ -64,7 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Initialisation de l’affichage
   displayTravauxModal();
+
+
   
     // Ouvrir la modale 1
     if (openButton) {
@@ -215,9 +231,10 @@ if (btnValider) {
 
     const token = localStorage.getItem("token");
     console.log("Token utilisé :", token);
-for (let pair of formData.entries()) {
-  console.log(pair[0] + ' ➜', pair[1]);
-}
+
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ' ➜', pair[1]);
+    }
 
     try {
       const response = await fetch("http://localhost:5678/api/works", {
@@ -234,7 +251,11 @@ for (let pair of formData.entries()) {
 
       await new Promise((resolve) => setTimeout(resolve, 300));
       await displayTravauxModal();
-      modal2.style.display = "none";
+
+      // 👉 Retour à la modale 1
+      document.querySelector(".addPhoto").style.display = "none";
+      document.querySelector(".modalinter").style.display = "flex";
+
       document.getElementById("form-photo").reset();
 
       const previewImg = document.getElementById("displayedImage");
@@ -244,11 +265,13 @@ for (let pair of formData.entries()) {
       const label = document.querySelector("label.file");
       if (icon) icon.style.display = "block";
       if (label) label.style.display = "block";
+
     } catch (error) {
       console.error("Erreur lors de l'envoi :", error);
       alert("L'ajout a échoué. Vérifie ta connexion ou ton authentification.");
     }
   });
 }
+
   });
   
