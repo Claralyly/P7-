@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modal2.style.display = "block";
         chargerCategories(); //l’appel est bon ici
       });
-      //Ajouter une photo sur première modale //
+     // Ajouter une photo sur première modale //
 const btnValider = document.querySelector(".btn-valider");
 
 if (btnValider) {
@@ -249,13 +249,47 @@ if (btnValider) {
         throw new Error("Erreur lors de l'ajout");
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      await displayTravauxModal();
+      const newWork = await response.json();
 
-      // 👉 Retour à la modale 1
-      document.querySelector(".addPhoto").style.display = "none";
-      document.querySelector(".modalinter").style.display = "flex";
+      // Ajout immédiat du nouvel élément dans la galerie
+      const workWrapper = document.createElement("div");
+      workWrapper.classList.add("work-item");
 
+      const img = document.createElement("img");
+      img.src = newWork.imageUrl;
+      img.id = newWork.id;
+
+      const deleteIcon = document.createElement("i");
+      deleteIcon.className = "fas fa-trash-can";
+
+      deleteIcon.addEventListener("click", async () => {
+        try {
+          const res = await fetch(`http://localhost:5678/api/works/${newWork.id}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (res.ok) {
+            workWrapper.remove();
+          } else {
+            alert("Erreur lors de la suppression");
+          }
+        } catch (err) {
+          console.error("Erreur suppression :", err);
+          alert("Impossible de supprimer l’image");
+        }
+      });
+
+      workWrapper.appendChild(img);
+      workWrapper.appendChild(deleteIcon);
+      worksDom.appendChild(workWrapper);
+
+      // 👉 Fermer entièrement la modale
+      document.querySelector(".modal").style.display = "none";
+
+      // Réinitialiser le formulaire
       document.getElementById("form-photo").reset();
 
       const previewImg = document.getElementById("displayedImage");
@@ -272,6 +306,9 @@ if (btnValider) {
     }
   });
 }
+
+
+     
 
   });
   
