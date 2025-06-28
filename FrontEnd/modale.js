@@ -250,6 +250,9 @@ if (btnValider) {
       }
 
       const newWork = await response.json();
+      
+
+      console.log("Nouvel élément ajouté :", newWork);
 
       // Ajout immédiat du nouvel élément dans la galerie
       const workWrapper = document.createElement("div");
@@ -302,7 +305,7 @@ if (btnValider) {
 
     } catch (error) {
       console.error("Erreur lors de l'envoi :", error);
-      alert("L'ajout a échoué. Vérifie ta connexion ou ton authentification.");
+      
     }
   });
 }
@@ -311,4 +314,6 @@ if (btnValider) {
      
 
   });
+  
+
   
